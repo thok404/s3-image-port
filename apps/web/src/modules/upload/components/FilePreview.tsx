@@ -2,7 +2,7 @@ import { startTransition, useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom, type PrimitiveAtom } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslations } from "use-intl";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, XIcon } from "lucide-react";
 import McCheck from "~icons/mingcute/check-line";
 import McTrash from "~icons/mingcute/delete-2-line";
 import McPencil from "~icons/mingcute/edit-2-line";
@@ -28,10 +28,12 @@ import {
 import { AutoResizeHeight } from "@/components/misc/auto-resize-height";
 import { validS3SettingsAtom } from "@/stores/atoms/settings";
 import { s3Key2Url } from "@/lib/s3/s3-key";
+import { parentPrefix } from "@/lib/s3/folder-path";
 import { useCopy } from "@/lib/hooks/use-copy";
 import { toast } from "sonner";
-import ImageCompressOptions from "@/modules/settings/upload/ImageCompressOptions";
-import { KeyTemplateConsumerInput } from "@/modules/settings/upload/key-template/consumer-input";
+import ImageCompressOptions from "../settings/ImageCompressOptions";
+import { KeyTemplateConsumerInput } from "../settings/key-template/consumer-input";
+import { DestinationPickerButton } from "./DestinationPickerButton";
 
 import type { PendingUpload } from "../types";
 import {
@@ -65,6 +67,12 @@ export function FilePreview({
           <div className="font-medium truncate text-sm" title={file.file.name}>
             {file.file.name}
           </div>
+          <span
+            className="hidden min-w-0 truncate font-mono text-xs text-muted-foreground sm:inline"
+            title={file.key.toString()}
+          >
+            {parentPrefix(file.key.toString())}
+          </span>
           <FilePreviewProcess file={file} process={() => process(fileAtom)} />
         </div>
 
@@ -140,21 +148,44 @@ function FilePreviewEdit({
 }: {
   fileAtom: PrimitiveAtom<PendingUpload>;
 }) {
-  const { file, updateProcessOption, updateTemplate } =
+  const { file, updateProcessOption, updateTemplate, updateFolder } =
     useFileAtomOperations(fileAtom);
   const t = useTranslations("upload.fileList");
+  const targetT = useTranslations("upload.settings.target");
   const presets = useAtomValue(presetsAtom);
   return (
     <div className="space-y-4 pb-2">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">{t("folder")}</span>
+          <DestinationPickerButton
+            size="sm"
+            folder={file.key.folder}
+            onSelect={updateFolder}
+          />
+          {file.key.folder !== null && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("followTemplate")}
+              title={targetT("followTemplate")}
+              onClick={() => updateFolder(null)}
+            >
+              <XIcon className="size-4" />
+            </Button>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground break-all">
+          {t("keyWillBe")} {file.key.toString()}
+        </p>
+      </div>
+      <Separator />
       <div>
         <KeyTemplateConsumerInput
           value={file.key.template}
           onChange={updateTemplate}
           presets={presets}
         />
-        <p className="text-sm text-muted-foreground mt-2">
-          {t("keyWillBe")} {file.key.toString()}
-        </p>
       </div>
       <Separator />
       {file.supportProcess && (

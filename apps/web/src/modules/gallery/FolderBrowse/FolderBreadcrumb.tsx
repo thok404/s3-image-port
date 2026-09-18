@@ -7,7 +7,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { ChevronRightIcon, FolderTreeIcon, Trash2Icon } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useTranslations } from "use-intl";
-import { normalizePrefix } from "../hooks/folder-logic";
+import { normalizePrefix } from "@/lib/s3/folder-path";
 import {
   breadcrumbSegmentsAtom,
   currentPrefixAtom,

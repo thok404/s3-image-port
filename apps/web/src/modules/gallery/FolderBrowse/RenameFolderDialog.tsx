@@ -16,7 +16,7 @@ import {
   isDescendantPrefix,
   normalizeFolderPathInput,
   normalizePrefix,
-} from "../hooks/folder-logic";
+} from "@/lib/s3/folder-path";
 import { useFolderOperations } from "../hooks/use-folder-operations";
 
 /**

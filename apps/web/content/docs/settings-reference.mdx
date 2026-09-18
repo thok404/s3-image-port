@@ -8,6 +8,8 @@ Currently, `S3 Image Port` settings include three parts:
 2. Gallery Settings
 3. Upload Settings
 
+The first two live under Settings. Upload settings live on the upload page itself, next to the files they apply to.
+
 ## S3 Bucket Settings [#s3-settings]
 
 Endpoint, bucket name, region, Access Key, and Secret Key are all provided when creating an S3 bucket, so we won't elaborate on them here.
@@ -42,6 +44,27 @@ When you specify an include path (e.g., `i/`), only objects starting with that p
 **Note:** This setting filters objects when they are fetched from S3. Changing this value will automatically refresh the gallery to show only the filtered objects.
 
 ## Upload Settings [#upload-settings]
+
+Upload settings are part of the upload page: the files you are about to upload and the rules that name them belong together. Editing them there applies the change to the files already queued as well, so what you see on screen is what gets uploaded.
+
+### Destination Folder [#destination-folder]
+
+Where the files are uploaded to. Three states:
+
+- **Follow key template** (default): the key template decides the whole path, which is what the app has always done.
+- **Bucket root**: files land at the top level of the bucket.
+- **A folder**: files land inside that folder. Pick one of the folders that already exist in your bucket, type a path, or create a folder on the spot.
+
+The resulting key is shown as soon as a folder is picked, so the destination can be checked before anything is uploaded. `Keep template subfolders` decides what the template still contributes once a folder is chosen:
+
+| Keep template subfolders | Result, with the default template and the folder `photos/`                          |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| On (default)             | `photos/2026/09/18/5zzkbk-mmvr.jpg` — the generated year/month/day folders are kept |
+| Off                      | `photos/5zzkbk-mmvr.jpg` — only the generated file name is kept                     |
+
+The fixed leading directory of the template (`i/` with the default template) is _replaced_ by the destination rather than nested under it, so you never get `photos/i/...`.
+
+A single file can be pointed at another folder from its own edit panel, which overrides the destination for that file only.
 
 ### Key Template [#key-template]
 

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import type { ChildFolder } from "../hooks/folder-logic";
+import type { ChildFolder } from "@/lib/s3/folder-path";
 import { DeleteFolderDialog } from "./DeleteFolderDialog";
 import { RenameFolderDialog } from "./RenameFolderDialog";
 

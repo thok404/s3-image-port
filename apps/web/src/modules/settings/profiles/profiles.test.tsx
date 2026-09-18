@@ -213,7 +213,13 @@ describe("Profile import export", { retry: 5 }, () => {
     const screen = await render(<Profiles />);
     const exportButton = screen.getByRole("button", { name: "Export" });
     await exportButton.click();
-    expect(await navigator.clipboard.readText()).toEqual(
+    // The OS clipboard normalizes newlines on Windows, so compare line ending
+    // agnostic — the exported payload itself is platform independent.
+    const clipboard = (await navigator.clipboard.readText()).replace(
+      /\r\n/g,
+      "\n",
+    );
+    expect(clipboard).toEqual(
       JSON.stringify({ name: "Default", data: getDefaultOptions() }, null, 2),
     );
   });

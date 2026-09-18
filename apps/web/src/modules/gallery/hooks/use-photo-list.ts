@@ -16,7 +16,7 @@ import {
   normalizePrefix as normalizePrefixForBrowse,
   type BreadcrumbSegment,
   type ChildFolder,
-} from "./folder-logic";
+} from "@/lib/s3/folder-path";
 import {
   currentPageAtom,
   photosAtom,
@@ -26,7 +26,7 @@ import {
 
 export const photosAtomReadOnly = atom((get) => get(photosAtom));
 
-export { normalizePrefix } from "./folder-logic";
+export { normalizePrefix } from "@/lib/s3/folder-path";
 
 export const availablePrefixesAtom = atom<
   { name: string; hierarchy: number }[]
@@ -52,7 +52,7 @@ export const availablePrefixesAtom = atom<
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 
-export type { ChildFolder, BreadcrumbSegment } from "./folder-logic";
+export type { ChildFolder, BreadcrumbSegment } from "@/lib/s3/folder-path";
 
 /** The prefix the user is currently browsing, `undefined` means "all photos". */
 export const currentPrefixAtom = atom((get) => get(displayOptionsAtom).prefix);

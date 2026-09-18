@@ -49,6 +49,8 @@ export function migrateFromV1(v1ProfileRaw: unknown): Options | Error {
       keyTemplate: String(oldAppSettings?.keyTemplate || defaultKeyTemplate),
       keyTemplatePresets: [],
       compressionOption: null,
+      targetFolder: null,
+      keepTemplateSubdirs: true,
     },
     gallery: {
       autoRefresh: Boolean(oldAppSettings?.enableAutoRefresh ?? true),

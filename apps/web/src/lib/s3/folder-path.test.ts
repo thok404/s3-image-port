@@ -9,7 +9,7 @@ import {
   normalizeFolderPathInput,
   normalizePrefix,
   parentPrefix,
-} from "./folder-logic";
+} from "./folder-path";
 import type { Photo } from "@/stores/schemas/photo";
 
 const photo = (key: string): Photo => ({

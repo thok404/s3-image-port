@@ -23,7 +23,7 @@ type KeyTemplateConsumerInputProps = KeyTemplateFieldInputProps & {
 
 export function KeyTemplateConsumerInput(props: KeyTemplateConsumerInputProps) {
   const { value, onChange } = props;
-  const t = useTranslations("settings.keyTemplate");
+  const t = useTranslations("upload.settings.keyTemplate");
   const { error, warning, validate } = useKeyTemplateValidation();
   return (
     <Field data-invalid={error !== undefined} className="gap-1">
@@ -69,7 +69,7 @@ export function KeyTemplateConsumerInput(props: KeyTemplateConsumerInputProps) {
 function KeyTemplateWithPresetsAutoComplete(
   props: KeyTemplateConsumerInputProps & { className?: string },
 ) {
-  const t = useTranslations("settings.keyTemplate");
+  const t = useTranslations("upload.settings.keyTemplate");
   return (
     <Autocomplete.Root>
       <Autocomplete.Trigger className={props.className}>

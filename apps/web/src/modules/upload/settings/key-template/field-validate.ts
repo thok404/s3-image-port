@@ -15,7 +15,7 @@ export type KeyTemplateFieldInputProps = {
 };
 
 export function useKeyTemplateValidation() {
-  const t = useTranslations("settings.keyTemplate");
+  const t = useTranslations("upload.settings.keyTemplate");
   const [error, setError] = useState<{ message: string }[] | undefined>(
     undefined,
   );

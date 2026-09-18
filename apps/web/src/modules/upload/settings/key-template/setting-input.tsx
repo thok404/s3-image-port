@@ -20,7 +20,12 @@ import {
   useAtom,
   useSetAtom,
 } from "jotai";
-import { ComponentPropsWithoutRef, useState } from "react";
+import {
+  ComponentPropsWithoutRef,
+  createContext,
+  useContext,
+  useState,
+} from "react";
 import { Input } from "@/components/ui/input";
 import { defaultKeyTemplate } from "@/lib/s3/s3-key";
 import { cn } from "@/lib/utils";
@@ -72,40 +77,60 @@ const keyTemplatePresetsAtom = atom(
 
 const presetAtomsAtom = splitAtom(keyTemplatePresetsAtom, (item) => item.key);
 
-export function KeyTemplateSettingsInput() {
-  const t = useTranslations("settings.keyTemplate");
+/**
+ * The atom holding the default key template.
+ *
+ * The upload page replaces it so that editing the template also updates the
+ * files that are already queued; anywhere else the stored setting is used
+ * directly.
+ */
+const KeyTemplateAtomContext =
+  createContext<typeof keyTemplateAtom>(keyTemplateAtom);
+
+function useDefaultKeyTemplateAtom() {
+  return useContext(KeyTemplateAtomContext);
+}
+
+export function KeyTemplateSettingsInput({
+  templateAtom = keyTemplateAtom,
+}: {
+  templateAtom?: typeof keyTemplateAtom;
+} = {}) {
+  const t = useTranslations("upload.settings.keyTemplate");
   return (
-    <FieldSet>
-      <FieldLegend>{t("title")}</FieldLegend>
-      <FieldDescription>
-        {t.rich("description", {
-          more: (chunks) => (
-            <Link
-              from="/$locale"
-              to="/$locale/docs/$"
-              params={({ locale }) => ({
-                locale,
-                _splat: "settings-reference",
-              })}
-              hash="key-template"
-              target="_blank"
-              className="underline underline-offset-1"
-            >
-              {chunks}
-            </Link>
-          ),
-        })}
-      </FieldDescription>
-      <DefaultKeyTemplateInput />
-      <PresetList />
-    </FieldSet>
+    <KeyTemplateAtomContext value={templateAtom}>
+      <FieldSet>
+        <FieldLegend>{t("title")}</FieldLegend>
+        <FieldDescription>
+          {t.rich("description", {
+            more: (chunks) => (
+              <Link
+                from="/$locale"
+                to="/$locale/docs/$"
+                params={({ locale }) => ({
+                  locale,
+                  _splat: "settings-reference",
+                })}
+                hash="key-template"
+                target="_blank"
+                className="underline underline-offset-1"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </FieldDescription>
+        <DefaultKeyTemplateInput />
+        <PresetList />
+      </FieldSet>
+    </KeyTemplateAtomContext>
   );
 }
 
 function DefaultKeyTemplateInput() {
-  const [keyTemplate, setKeyTemplate] = useAtom(keyTemplateAtom);
+  const [keyTemplate, setKeyTemplate] = useAtom(useDefaultKeyTemplateAtom());
   const { error, warning, validate } = useKeyTemplateValidation();
-  const t = useTranslations("settings.keyTemplate");
+  const t = useTranslations("upload.settings.keyTemplate");
   return (
     <Field className="gap-1" data-invalid={error !== undefined}>
       <FieldLabel htmlFor="default-key-template-input">
@@ -168,8 +193,8 @@ function KeyTemplateInputWithReset(props: {
 
 function PresetList() {
   const [presetAtoms, dispatch] = useAtom(presetAtomsAtom);
-  const setDefaultTemplate = useSetAtom(keyTemplateAtom);
-  const t = useTranslations("settings.keyTemplate");
+  const setDefaultTemplate = useSetAtom(useDefaultKeyTemplateAtom());
+  const t = useTranslations("upload.settings.keyTemplate");
 
   return (
     <div>
@@ -251,10 +276,10 @@ function PresetItem({
   remove: () => void;
 }) {
   const [preset, setPreset] = useAtom(item);
-  const setDefaultTemplate = useSetAtom(keyTemplateAtom);
+  const setDefaultTemplate = useSetAtom(useDefaultKeyTemplateAtom());
   const [isEditing, setIsEditing] = useState(false);
   const { error, warning, validate } = useKeyTemplateValidation();
-  const t = useTranslations("settings.keyTemplate");
+  const t = useTranslations("upload.settings.keyTemplate");
   return (
     <TableRow data-testid={`preset-user-defined-item-${preset.key}`}>
       <TableCell>

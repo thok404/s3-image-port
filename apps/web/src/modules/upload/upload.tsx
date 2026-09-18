@@ -18,6 +18,7 @@ import {
 import { useHandlePaste } from "./hooks/use-handle-paste";
 import { DropZone } from "./components/DropZone";
 import { FilePreview } from "./components/FilePreview";
+import { UploadSettingsPanel } from "./components/UploadSettingsPanel";
 
 export function Upload() {
   const [fileAtoms, dispatch] = useAtom(fileAtomAtoms);
@@ -37,6 +38,8 @@ export function Upload() {
       </Card>
 
       <ClientOnly>{!s3Settings && <InvalidS3Dialog />}</ClientOnly>
+
+      <UploadSettingsPanel />
 
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-xl font-semibold">

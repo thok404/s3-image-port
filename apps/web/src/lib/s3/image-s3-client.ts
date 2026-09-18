@@ -269,6 +269,32 @@ class ImageS3Client {
   }
 
   /**
+   * The direct subfolders of `prefix`, as full folder paths with a trailing
+   * slash.
+   *
+   * Uses a delimiter, which makes S3 roll everything below a subfolder into a
+   * single `CommonPrefixes` entry. That is what a folder picker needs: one
+   * request per level instead of downloading every key in the bucket.
+   */
+  async listFolders(prefix = ""): Promise<string[]> {
+    const command = new ListObjectsV2Command({
+      Bucket: this.bucket,
+      Prefix: prefix,
+      Delimiter: "/",
+    });
+    const response = await this.client.send(command);
+    const httpStatusCode = response.$metadata.httpStatusCode!;
+    if (httpStatusCode >= 300) {
+      throw new Error(`List operation get http code: ${httpStatusCode}`);
+    }
+
+    return (response.CommonPrefixes ?? [])
+      .map((item) => item.Prefix)
+      .filter((item): item is string => !!item && item !== prefix)
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
    * Server-side copy of a single object, so the bytes never travel through the
    * browser.
    */

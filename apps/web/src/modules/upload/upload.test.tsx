@@ -110,7 +110,7 @@ describe("Upload Component", () => {
 
       const screen = await render(<Upload />);
       await expect
-        .element(screen.getByText("test-image.jpg"))
+        .element(screen.getByText("test-image.jpg", { exact: true }))
         .toBeInTheDocument();
     });
 

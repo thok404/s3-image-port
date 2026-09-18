@@ -55,17 +55,6 @@ function SettingPageSwitcher() {
       </Link>
       <Link
         from="/$locale/settings"
-        to="/$locale/settings/upload"
-        params={(prev) => ({ locale: prev.locale })}
-        className={cn(
-          buttonVariants({ variant: "ghost" }),
-          "justify-start data-[status=active]:bg-muted data-[status=active]:hover:bg-accent",
-        )}
-      >
-        {t("upload")}
-      </Link>
-      <Link
-        from="/$locale/settings"
         to="/$locale/settings/gallery"
         params={(prev) => ({ locale: prev.locale })}
         className={cn(

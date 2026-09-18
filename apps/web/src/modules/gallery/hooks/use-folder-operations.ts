@@ -9,7 +9,7 @@ import {
   isDescendantPrefix,
   normalizePrefix,
   parentPrefix,
-} from "./folder-logic";
+} from "@/lib/s3/folder-path";
 import { useFetchPhotoList } from "./use-photo-list";
 
 /**

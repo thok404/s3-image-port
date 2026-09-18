@@ -14,7 +14,7 @@ import { useAtomValue } from "jotai";
 import { FolderPlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import { joinFolderPath } from "../hooks/folder-logic";
+import { joinFolderPath } from "@/lib/s3/folder-path";
 import { useFolderOperations } from "../hooks/use-folder-operations";
 import { parentPrefixAtom } from "../hooks/use-photo-list";
 

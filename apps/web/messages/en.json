@@ -15,33 +15,6 @@
     "title": "Settings",
     "profilesName": "Profiles",
     "s3": "S3",
-    "upload": "Upload",
-    "keyTemplate": {
-      "title": "Key template",
-      "description": "Template for the S3 key. Learn more at <more>docs</more>, including the available placeholders.",
-      "endWithExtWarning": "End with \".'{{ext'}}\" is generally recommended.",
-      "deprecatedPlaceholderWarning": "placeholder {placeholder} has been deprecated, use {instead} instead",
-      "systemBadge": "System",
-      "defaultKeyTemplate": "Default Key template",
-      "defaultKeyTemplateDesc": "The default template used when uploading files. You can override this template when performing uploads.",
-      "presets": {
-        "title": "Template presets",
-        "actions": "Actions",
-        "applyAsDefault": "Apply as Default",
-        "addNew": "add new preset",
-        "edit": "Edit",
-        "delete": "Delete"
-      }
-    },
-    "imageCompress": {
-      "targetFormat": "Target Format",
-      "selectFormat": "Select format",
-      "quality": "Quality",
-      "title": "Image convertion and compression",
-      "description": "Convert or compress your image before uploading them.",
-      "enableDesc": "If turned off, images will be uploaded to S3 as is.",
-      "qualityDesc": "Quality for the compressed image, integer from 1 to 100."
-    },
     "s3Settings": {
       "title": "S3",
       "endpoint": "Endpoint",
@@ -413,10 +386,72 @@
       "recompress": "Recompress",
       "compressing": "Compressing...",
       "keyWillBe": "Key will be:",
-      "upload": "Upload"
+      "upload": "Upload",
+      "folder": "Folder",
+      "followTemplate": "Follow template"
     },
     "alerts": {
       "s3NotConfigured": "S3 settings are not configured"
+    },
+    "settings": {
+      "title": "Upload settings",
+      "target": {
+        "label": "Destination",
+        "followTemplate": "Follow key template",
+        "bucketRoot": "Bucket root",
+        "choose": "Choose folder…",
+        "keepSubdirs": "Keep template subfolders",
+        "keepSubdirsDesc": "Also create the folders the key template generates (such as the year/month/day folders) inside the destination.",
+        "preview": "Files will be uploaded to",
+        "previewFollowTemplate": "the path decided by the key template below",
+        "invalidPath": "Enter a valid folder path.",
+        "picker": {
+          "title": "Choose a folder",
+          "desc": "Browse the folders that already exist in your bucket, or type a path.",
+          "pathLabel": "Path",
+          "pathPlaceholder": "photos/2024",
+          "root": "Bucket root",
+          "up": "Go to the parent folder",
+          "current": "Current folder",
+          "empty": "No subfolder here.",
+          "loading": "Loading folders…",
+          "loadFailed": "Could not list the folders of your bucket.",
+          "newFolder": "New folder",
+          "newFolderPlaceholder": "Folder name",
+          "create": "Create",
+          "useTemplate": "Follow key template",
+          "select": "Use this folder",
+          "go": "Go"
+        },
+        "keepSubdirsDisabled": "Only used once a folder is chosen."
+      },
+      "keyTemplate": {
+        "title": "Key template",
+        "description": "Template for the S3 key. Learn more at <more>docs</more>, including the available placeholders.",
+        "endWithExtWarning": "End with \".'{{ext'}}\" is generally recommended.",
+        "deprecatedPlaceholderWarning": "placeholder {placeholder} has been deprecated, use {instead} instead",
+        "systemBadge": "System",
+        "defaultKeyTemplate": "Default Key template",
+        "defaultKeyTemplateDesc": "The default template used when uploading files. You can override this template when performing uploads.",
+        "presets": {
+          "title": "Template presets",
+          "actions": "Actions",
+          "applyAsDefault": "Apply as Default",
+          "addNew": "add new preset",
+          "edit": "Edit",
+          "delete": "Delete"
+        }
+      },
+      "imageCompress": {
+        "targetFormat": "Target Format",
+        "selectFormat": "Select format",
+        "quality": "Quality",
+        "title": "Image convertion and compression",
+        "description": "Convert or compress your image before uploading them.",
+        "enableDesc": "If turned off, images will be uploaded to S3 as is.",
+        "qualityDesc": "Quality for the compressed image, integer from 1 to 100."
+      },
+      "advanced": "Key template & compression"
     }
   },
   "common": {

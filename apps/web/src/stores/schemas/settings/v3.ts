@@ -17,6 +17,8 @@ export const getDefaultOptions = (): z.infer<typeof optionsSchema> => {
       keyTemplate: defaultKeyTemplate,
       keyTemplatePresets: [],
       compressionOption: null,
+      targetFolder: null,
+      keepTemplateSubdirs: true,
     },
     gallery: {
       autoRefresh: true,
@@ -65,12 +67,29 @@ const compressOptionSchema = z.union([
 ]);
 const keyTemplateSchema = z.string().min(1, "Key template cannot be empty");
 
+/**
+ * Where uploads are put.
+ *
+ * - `null`: follow the key template, the template decides the whole path.
+ * - `""`: the bucket root, the template only contributes the file name.
+ * - anything else: a folder path, always ending with a slash.
+ */
+const targetFolderSchema = z
+  .string()
+  .refine(
+    (value) => value === "" || value.endsWith("/"),
+    "A folder path must end with a slash",
+  )
+  .nullable();
+
 const uploadSettingsSchema = z.object({
   keyTemplate: keyTemplateSchema,
   keyTemplatePresets: z
     .array(z.object({ key: z.string(), value: z.string() }))
     .optional(),
   compressionOption: compressOptionSchema.nullable(),
+  targetFolder: targetFolderSchema,
+  keepTemplateSubdirs: z.boolean(),
 });
 
 const uploadSettingsSchemaForLoad = z.object({
@@ -79,6 +98,8 @@ const uploadSettingsSchemaForLoad = z.object({
     .array(z.object({ key: z.string(), value: z.string() }))
     .optional(),
   compressionOption: compressOptionSchema.nullable().catch(null),
+  targetFolder: targetFolderSchema.catch(null),
+  keepTemplateSubdirs: z.boolean().catch(true),
 });
 
 const gallerySettingsSchema = z.object({

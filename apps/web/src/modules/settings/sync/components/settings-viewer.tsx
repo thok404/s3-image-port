@@ -49,9 +49,21 @@ type ProfileItemProps = {
 function ProfileItem(props: ProfileItemProps) {
   const { name, localProfile, remoteProfile } = props;
   const t = useTranslations("settings");
+  const tUpload = useTranslations("upload.settings");
 
   // Use remote profile as primary, fall back to local if remote doesn't exist
   const profile = remoteProfile ?? localProfile!;
+
+  /** `null` means "the template decides", `""` means the bucket root. */
+  const describeTargetFolder = (folder: string | null | undefined) => {
+    if (folder === undefined) {
+      return undefined;
+    }
+    if (folder === null) {
+      return tUpload("target.followTemplate");
+    }
+    return folder === "" ? tUpload("target.bucketRoot") : folder;
+  };
 
   return (
     <Collapsible className="rounded-lg border bg-muted/30 p-4">
@@ -113,10 +125,24 @@ function ProfileItem(props: ProfileItemProps) {
         <Separator />
 
         <div className="space-y-3">
-          <div className="text-sm font-semibold">{t("upload")}</div>
+          <div className="text-sm font-semibold">{tUpload("title")}</div>
           <div className="space-y-2">
             <ItemDiffViewer
-              label={t("keyTemplate.title")}
+              label={tUpload("target.label")}
+              localValue={describeTargetFolder(
+                localProfile?.upload.targetFolder,
+              )}
+              remoteValue={describeTargetFolder(
+                remoteProfile?.upload.targetFolder,
+              )}
+            />
+            <ItemDiffViewer
+              label={tUpload("target.keepSubdirs")}
+              localValue={localProfile?.upload.keepTemplateSubdirs.toString()}
+              remoteValue={remoteProfile?.upload.keepTemplateSubdirs.toString()}
+            />
+            <ItemDiffViewer
+              label={tUpload("keyTemplate.title")}
               localValue={localProfile?.upload.keyTemplate}
               remoteValue={remoteProfile?.upload.keyTemplate}
             />
@@ -124,7 +150,7 @@ function ProfileItem(props: ProfileItemProps) {
               (localProfile?.upload.keyTemplatePresets?.length ?? 0) > 0) && (
               <>
                 <div className="text-xs font-medium text-muted-foreground mt-2">
-                  {t("keyTemplate.presets.title")}
+                  {tUpload("keyTemplate.presets.title")}
                 </div>
                 <div className="space-y-1 pl-2">
                   <KeyTemplatePresetsDiff
@@ -135,7 +161,7 @@ function ProfileItem(props: ProfileItemProps) {
               </>
             )}
             <ItemDiffViewer
-              label={t("imageCompress.title")}
+              label={tUpload("imageCompress.title")}
               localValue={
                 localProfile?.upload.compressionOption ? "true" : "false"
               }
@@ -148,7 +174,7 @@ function ProfileItem(props: ProfileItemProps) {
                 !remoteProfile?.upload.compressionOption)) && (
               <div className="space-y-1 pl-2">
                 <ItemDiffViewer
-                  label={t("imageCompress.targetFormat")}
+                  label={tUpload("imageCompress.targetFormat")}
                   localValue={localProfile?.upload.compressionOption?.type}
                   remoteValue={remoteProfile?.upload.compressionOption?.type}
                 />
@@ -156,7 +182,7 @@ function ProfileItem(props: ProfileItemProps) {
                   "quality" in
                     (localProfile?.upload.compressionOption ?? {})) && (
                   <ItemDiffViewer
-                    label={t("imageCompress.quality")}
+                    label={tUpload("imageCompress.quality")}
                     localValue={
                       localProfile?.upload.compressionOption &&
                       "quality" in localProfile.upload.compressionOption

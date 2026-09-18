@@ -40,7 +40,7 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
   value,
   onChange,
 }) => {
-  const t = useTranslations("settings.imageCompress");
+  const t = useTranslations("upload.settings.imageCompress");
   const isProcessingEnabled = value !== null;
 
   const handleEnabledChange = (enabled: boolean) => {

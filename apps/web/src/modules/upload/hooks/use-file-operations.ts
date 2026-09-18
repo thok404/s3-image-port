@@ -36,9 +36,21 @@ export function useFileAtomOperations(atom: PrimitiveAtom<PendingUpload>) {
     [setFile],
   );
 
+  /** Overrides the destination for this file only. */
+  const updateFolder = useCallback(
+    (folder: string | null) => {
+      setFile((prev) => ({
+        ...prev,
+        key: prev.key.withFolder(folder, prev.key.keepTemplateSubdirs),
+      }));
+    },
+    [setFile],
+  );
+
   return {
     file,
     updateProcessOption,
     updateTemplate,
+    updateFolder,
   };
 }
