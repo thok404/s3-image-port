@@ -12,6 +12,84 @@ export function normalizePrefix(prefix: string): string {
   return `${prefix}/`;
 }
 
+/**
+ * Whether the key is a folder marker rather than a photo.
+ *
+ * S3 has no directories: a folder only exists because of an empty object whose
+ * key ends with a slash. The client keeps those markers in the photo list so
+ * empty folders stay browsable, and every consumer that renders photos has to
+ * filter them out.
+ */
+export function isFolderMarker(key: string): boolean {
+  return key.endsWith("/");
+}
+
+/** The folder holding `prefix`, `""` for a top-level folder. */
+export function parentPrefix(prefix: string): string {
+  const withoutTrailingSlash = normalizePrefix(prefix).slice(0, -1);
+  const lastSlash = withoutTrailingSlash.lastIndexOf("/");
+  return lastSlash === -1 ? "" : withoutTrailingSlash.slice(0, lastSlash + 1);
+}
+
+/**
+ * Whether `child` lives strictly inside `parent`. Used to reject moving a
+ * folder into its own subtree, which would otherwise recurse forever.
+ */
+export function isDescendantPrefix(parent: string, child: string): boolean {
+  const parentPath = normalizePrefix(parent);
+  const childPath = normalizePrefix(child);
+  if (parentPath === "") {
+    return childPath !== "";
+  }
+  return childPath !== parentPath && childPath.startsWith(parentPath);
+}
+
+/** Longest folder path we accept, well under the 1024-byte S3 key limit. */
+const MAX_FOLDER_PATH_LENGTH = 900;
+
+/**
+ * Cleans up a folder path typed by the user into a canonical `a/b/` form.
+ *
+ * Returns `null` when the input cannot be used as a folder path, so callers can
+ * surface a validation error instead of creating a weird key.
+ */
+export function normalizeFolderPathInput(input: string): string | null {
+  // Windows users tend to paste backslashes.
+  const unified = input.trim().replace(/\\/g, "/");
+  const segments = unified
+    .split("/")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  if (segments.length === 0) {
+    return null;
+  }
+  // "." and ".." have no meaning in S3 (the key would literally be ".."),
+  // listing them would only lead to confusing objects.
+  if (segments.some((segment) => segment === "." || segment === "..")) {
+    return null;
+  }
+  // eslint-disable-next-line no-control-regex
+  if (segments.some((segment) => /[\u0000-\u001f\u007f]/.test(segment))) {
+    return null;
+  }
+
+  const path = `${segments.join("/")}/`;
+  return path.length > MAX_FOLDER_PATH_LENGTH ? null : path;
+}
+
+/**
+ * Resolves a path typed by the user against the folder being browsed, e.g.
+ * `joinFolderPath("i/", "2024")` -> `"i/2024/"`.
+ */
+export function joinFolderPath(parent: string, input: string): string | null {
+  const relative = normalizeFolderPathInput(input);
+  if (relative === null) {
+    return null;
+  }
+  return `${normalizePrefix(parent)}${relative}`;
+}
+
 export type ChildFolder = {
   /** The folder name, e.g. `2024` */
   name: string;
@@ -27,6 +105,9 @@ export type ChildFolder = {
  * The direct subfolders of `prefix`, derived from the photo list.
  *
  * `prefix` is normalized internally, so both `i/2024` and `i/2024/` work.
+ *
+ * A subfolder is reported as soon as one of its keys is seen, which is also how
+ * an empty folder shows up: it is known from its marker object alone.
  */
 export function deriveChildFolders(
   photos: Photo[],
@@ -53,9 +134,11 @@ export function deriveChildFolders(
       photoCount: 0,
       totalPhotoCount: 0,
     };
-    entry.totalPhotoCount += 1;
-    if (!rest.slice(slashIndex + 1).includes("/")) {
-      entry.photoCount += 1;
+    if (!isFolderMarker(photo.Key)) {
+      entry.totalPhotoCount += 1;
+      if (!rest.slice(slashIndex + 1).includes("/")) {
+        entry.photoCount += 1;
+      }
     }
     folders.set(childPrefix, entry);
   }

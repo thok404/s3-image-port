@@ -6,11 +6,12 @@ import { atom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { validS3SettingsAtom } from "@/stores/atoms/settings";
+import { validS3SettingsAtom, s3SettingsAtom } from "@/stores/atoms/settings";
 import { getTimeRange } from "./use-display-control";
 import {
   deriveBreadcrumbSegments,
   deriveChildFolders,
+  isFolderMarker,
   isPhotoInFolderScope,
   normalizePrefix as normalizePrefixForBrowse,
   type BreadcrumbSegment,
@@ -33,6 +34,10 @@ export const availablePrefixesAtom = atom<
   const photos = get(photosAtomReadOnly);
   const prefixes = new Set(
     photos.flatMap((photo) => {
+      if (isFolderMarker(photo.Key)) {
+        // the marker's own folder, e.g. `i/2024/` for the key `i/2024/`
+        return [photo.Key];
+      }
       const parts = photo.Key.split("/");
       return parts
         .slice(0, -1)
@@ -53,11 +58,27 @@ export type { ChildFolder, BreadcrumbSegment } from "./folder-logic";
 export const currentPrefixAtom = atom((get) => get(displayOptionsAtom).prefix);
 
 /**
+ * The folder the gallery treats as its root. When the S3 settings restrict the
+ * listing to an include path, that path *is* the root as far as the user is
+ * concerned, so new folders have to be created inside it.
+ */
+export const folderRootAtom = atom((get) =>
+  normalizePrefixForBrowse(get(s3SettingsAtom).includePath ?? ""),
+);
+
+/**
  * The folder used to compute the folder list. Falls back to the bucket root
  * when no prefix filter is applied, so the root folders are always reachable.
  */
 export const browsePrefixAtom = atom((get) =>
   normalizePrefixForBrowse(get(currentPrefixAtom) ?? ""),
+);
+
+/** The folder new folders are created in. */
+export const parentPrefixAtom = atom((get) =>
+  get(currentPrefixAtom) === undefined
+    ? get(folderRootAtom)
+    : get(browsePrefixAtom),
 );
 
 /**
@@ -67,6 +88,20 @@ export const browsePrefixAtom = atom((get) =>
 export const childFoldersAtom = atom<ChildFolder[]>((get) =>
   deriveChildFolders(get(photosAtomReadOnly), get(browsePrefixAtom)),
 );
+
+/**
+ * Number of photos at or below the folder currently being browsed. Folder
+ * markers are not photos, so they are not counted.
+ */
+export const currentFolderPhotoCountAtom = atom((get) => {
+  const base = get(browsePrefixAtom);
+  return get(photosAtomReadOnly).filter(
+    (photo) =>
+      !isFolderMarker(photo.Key) &&
+      photo.Key.startsWith(base) &&
+      photo.Key.length > base.length,
+  ).length;
+});
 
 export const breadcrumbSegmentsAtom = atom<BreadcrumbSegment[]>((get) =>
   deriveBreadcrumbSegments(get(currentPrefixAtom)),
@@ -87,6 +122,11 @@ export const filteredPhotosAtom = atom<Photo[]>((get) => {
 
   const displayedPhotos = searchedPhotos
     .filter((photo) => {
+      // Folder markers are in the list to keep empty folders browsable, they
+      // are not photos and have nothing to render in the grid.
+      if (isFolderMarker(photo.Key)) {
+        return false;
+      }
       if (
         !isPhotoInFolderScope(
           photo,

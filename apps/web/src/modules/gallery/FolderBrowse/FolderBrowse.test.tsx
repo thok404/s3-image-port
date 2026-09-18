@@ -40,11 +40,15 @@ describe("FolderBrowse", () => {
     expect(screen.queryByText("Include subfolders")).not.toBeInTheDocument();
   });
 
-  it("renders nothing when the bucket has no folder", () => {
+  it("offers to create a folder when the bucket has none", () => {
     store.set(photosAtom, [photo("a.jpg"), photo("b.jpg")]);
     render(<FolderBrowse />);
 
-    expect(screen.queryByText("Folders")).not.toBeInTheDocument();
+    expect(screen.getByText("Folders")).toBeInTheDocument();
+    expect(screen.getByText("(0)")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "New folder" }),
+    ).toBeInTheDocument();
   });
 
   it("drills into a folder and lists its subfolders", async () => {

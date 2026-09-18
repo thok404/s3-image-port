@@ -4,27 +4,33 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { displayOptionsAtom } from "@/stores/atoms/gallery";
 import { useAtom, useAtomValue } from "jotai";
-import { ChevronRightIcon, FolderTreeIcon } from "lucide-react";
-import { Fragment } from "react";
+import { ChevronRightIcon, FolderTreeIcon, Trash2Icon } from "lucide-react";
+import { Fragment, useState } from "react";
 import { useTranslations } from "use-intl";
+import { normalizePrefix } from "../hooks/folder-logic";
 import {
   breadcrumbSegmentsAtom,
   currentPrefixAtom,
 } from "../hooks/use-photo-list";
+import { DeleteFolderDialog } from "./DeleteFolderDialog";
 
 /**
- * Breadcrumb of the folder currently being browsed. Render nothing when no
- * folder filter is applied ("all photos" view).
+ * Breadcrumb of the folder currently being browsed, plus the controls that act
+ * on it. Render nothing when no folder filter is applied ("all photos" view).
  */
 export function FolderBreadcrumb() {
   const t = useTranslations("gallery.folder");
   const [displayOptions, setDisplayOptions] = useAtom(displayOptionsAtom);
   const currentPrefix = useAtomValue(currentPrefixAtom);
   const segments = useAtomValue(breadcrumbSegmentsAtom);
+  const [deleteOpened, setDeleteOpened] = useState(false);
 
   if (currentPrefix === undefined) {
     return null;
   }
+
+  // The bucket root itself cannot be deleted, only the folders inside it.
+  const deletablePrefix = normalizePrefix(currentPrefix);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -63,25 +69,47 @@ export function FolderBreadcrumb() {
           );
         })}
       </nav>
-      <Button
-        variant={displayOptions.includeSubfolders ? "secondary" : "outline"}
-        size="sm"
-        title={t("includeSubfoldersHint")}
-        aria-pressed={displayOptions.includeSubfolders}
-        onClick={() =>
-          setDisplayOptions((prev) => ({
-            ...prev,
-            includeSubfolders: !prev.includeSubfolders,
-          }))
-        }
-        className={cn(
-          "shrink-0",
-          displayOptions.includeSubfolders && "text-secondary-foreground",
+
+      <div className="flex shrink-0 items-center gap-2">
+        <Button
+          variant={displayOptions.includeSubfolders ? "secondary" : "outline"}
+          size="sm"
+          title={t("includeSubfoldersHint")}
+          aria-pressed={displayOptions.includeSubfolders}
+          onClick={() =>
+            setDisplayOptions((prev) => ({
+              ...prev,
+              includeSubfolders: !prev.includeSubfolders,
+            }))
+          }
+          className={cn(
+            "shrink-0",
+            displayOptions.includeSubfolders && "text-secondary-foreground",
+          )}
+        >
+          <FolderTreeIcon className="size-4" />
+          {t("includeSubfolders")}
+        </Button>
+        {deletablePrefix !== "" && (
+          <Button
+            variant="destructive"
+            size="icon-sm"
+            title={t("manage.deleteCurrent")}
+            aria-label={t("manage.deleteCurrent")}
+            onClick={() => setDeleteOpened(true)}
+          >
+            <Trash2Icon className="size-4" />
+          </Button>
         )}
-      >
-        <FolderTreeIcon className="size-4" />
-        {t("includeSubfolders")}
-      </Button>
+      </div>
+
+      {deletablePrefix !== "" && (
+        <DeleteFolderDialog
+          prefix={deletablePrefix}
+          open={deleteOpened}
+          onOpenChange={setDeleteOpened}
+        />
+      )}
     </div>
   );
 }
