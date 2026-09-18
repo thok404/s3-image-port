@@ -42,6 +42,16 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
 }) => {
   const t = useTranslations("upload.settings.imageCompress");
   const isProcessingEnabled = value !== null;
+  /**
+   * One instance of this component is mounted per queued file, and the upload
+   * page also mounts the settings copy. Hardcoded ids would then repeat, and a
+   * `<label for>` resolves against the first match in the document — clicking
+   * the label of a file's switch would flip the settings switch instead.
+   */
+  const uid = React.useId();
+  const enableId = `${uid}-enable-processing`;
+  const typeId = `${uid}-image-type-select`;
+  const qualityId = `${uid}-quality-slider`;
 
   const handleEnabledChange = (enabled: boolean) => {
     if (enabled) {
@@ -81,13 +91,13 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
       {/* Enable/Disable Switch */}
       <Field orientation="horizontal">
         <FieldContent>
-          <FieldLabel htmlFor="enable-processing">{t("title")}</FieldLabel>
+          <FieldLabel htmlFor={enableId}>{t("title")}</FieldLabel>
           <FieldDescription>
             {t("description")} {t("enableDesc")}
           </FieldDescription>
         </FieldContent>
         <Switch
-          id="enable-processing"
+          id={enableId}
           checked={isProcessingEnabled}
           onCheckedChange={handleEnabledChange}
         />
@@ -95,9 +105,7 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
 
       {isProcessingEnabled && (
         <Field className="gap-1">
-          <FieldLabel htmlFor="image-type-select">
-            {t("targetFormat")}
-          </FieldLabel>
+          <FieldLabel htmlFor={typeId}>{t("targetFormat")}</FieldLabel>
           <Select
             value={currentType}
             onValueChange={(newVal) => {
@@ -108,7 +116,7 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
               item.toUpperCase() ?? t("selectFormat")
             }
           >
-            <SelectTrigger id="image-type-select">
+            <SelectTrigger id={typeId}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -127,7 +135,7 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
         currentType !== "png" && (
           <div>
             <NumberField.Root
-              id="quality-slider"
+              id={qualityId}
               min={1}
               max={100}
               step={1}
@@ -138,7 +146,7 @@ const ImageCompressOptions: React.FC<ImageProcessOptionsProps> = ({
               <Field className="gap-1">
                 <NumberField.ScrubArea className="cursor-ew-resize w-fit!">
                   <FieldLabel
-                    htmlFor="quality-slider"
+                    htmlFor={qualityId}
                     className="cursor-ew-resize text-sm font-medium text-gray-900"
                   >
                     {t("quality")}

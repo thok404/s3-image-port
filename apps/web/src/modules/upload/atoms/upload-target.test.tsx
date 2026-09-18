@@ -6,6 +6,7 @@ import { uploadSettingsAtom } from "@/stores/atoms/settings";
 import {
   applyUploadTargetAtom,
   applyUploadTemplateAtom,
+  applyUploadCompressionAtom,
   appendFilesAtom,
   fileListAtom,
   uploadTargetAtom,
@@ -191,5 +192,61 @@ describe("upload destination", () => {
     });
 
     expect(result.current.files[0].key.toString()).toBe("photos/a.jpg");
+  });
+});
+
+describe("upload compression", () => {
+  const webp = { type: "webp", quality: 70 } as const;
+
+  it("stores the default and applies it to the queued files", async () => {
+    store.set(fileListAtom, [entry("a.jpg", "pending")]);
+
+    const { result, act } = await renderHook(
+      () => ({
+        setOption: useSetAtom(applyUploadCompressionAtom),
+        option: useAtomValue(applyUploadCompressionAtom),
+        files: useAtomValue(fileListAtom),
+      }),
+      { wrapper },
+    );
+
+    await act(() => {
+      result.current.setOption(webp);
+    });
+
+    expect(result.current.option).toEqual(webp);
+    expect(result.current.files[0].compressOption).toEqual(webp);
+    expect(result.current.files[0].status).toBe("pending");
+  });
+
+  it("leaves the files that are already in flight alone", async () => {
+    store.set(fileListAtom, [
+      entry("converting.jpg", "processing"),
+      entry("sending.jpg", "uploading"),
+      entry("done.jpg", "uploaded"),
+      entry("queued.jpg", "pending"),
+    ]);
+
+    const { result, act } = await renderHook(
+      () => ({
+        setOption: useSetAtom(applyUploadCompressionAtom),
+        files: useAtomValue(fileListAtom),
+      }),
+      { wrapper },
+    );
+
+    await act(() => {
+      result.current.setOption(webp);
+    });
+
+    // a conversion in progress already picked its format
+    expect(result.current.files[0].compressOption).toBeNull();
+    expect(result.current.files[0].status).toBe("processing");
+    // the upload already carries the previous key and body
+    expect(result.current.files[1].compressOption).toBeNull();
+    expect(result.current.files[1].status).toBe("uploading");
+    expect(result.current.files[2].status).toBe("uploaded");
+
+    expect(result.current.files[3].compressOption).toEqual(webp);
   });
 });

@@ -151,17 +151,24 @@ export type UploadTarget = {
 };
 
 /**
- * Applies `mapper` to the files that have not been uploaded yet.
+ * Applies `mapper` to the files that are not in flight.
  *
  * Uploaded files are left alone: their key has already been used, and rewriting
- * it would make the copy button hand out a URL that does not exist.
+ * it would make the copy button hand out a URL that does not exist. Uploading
+ * files are left alone for the same reason — their key is already in a request.
+ *
+ * `alsoSkip` covers the states a specific update must not touch; changing the
+ * compression while a file is being converted would otherwise discard the
+ * result the in-flight conversion is about to write.
  */
 function mapQueuedFiles(
   files: PendingUpload[],
   mapper: (item: PendingUpload) => PendingUpload,
+  alsoSkip: PendingUpload["status"][] = [],
 ): PendingUpload[] {
+  const skip = ["uploaded", "uploading", ...alsoSkip];
   return files.map((item) =>
-    item.status === "uploaded" ? item : mapper(item),
+    skip.includes(item.status) ? item : mapper(item),
   );
 }
 
@@ -238,13 +245,19 @@ export const applyUploadCompressionAtom = atom(
     }));
     set(
       fileListAtom,
-      mapQueuedFiles(get(fileListAtom), (item) => ({
-        ...item,
-        compressOption: option,
-        // Whatever was processed before is now stale.
-        processedFile: null,
-        status: "pending",
-      })),
+      mapQueuedFiles(
+        get(fileListAtom),
+        (item) => ({
+          ...item,
+          compressOption: option,
+          // Whatever was processed before is now stale.
+          processedFile: null,
+          status: "pending",
+        }),
+        // A conversion in progress already picked its format; rewriting the
+        // file now would throw its result away.
+        ["processing"],
+      ),
     );
   },
 );
