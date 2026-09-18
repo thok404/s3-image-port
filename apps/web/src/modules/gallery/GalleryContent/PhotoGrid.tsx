@@ -6,6 +6,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useMemo, useRef } from "react";
 import McEmptyBox from "~icons/mingcute/empty-box-line.jsx";
 import {
+  childFoldersAtom,
   filteredPhotosCountAtom,
   PER_PAGE,
   useFetchPhotoList,
@@ -24,6 +25,7 @@ import { Link } from "@tanstack/react-router";
 
 export function PhotoGrid() {
   const photos = useAtomValue(showingPhotosAtom);
+  const folders = useAtomValue(childFoldersAtom);
   const photoSize = useAtomValue(photoSizeAtom);
   const setContainerWidth = useSetAtom(containerWidthAtom);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,9 +93,10 @@ export function PhotoGrid() {
           </div>
           <GalleryPagination />
         </div>
-      ) : (
+      ) : folders.length === 0 ? (
+        // Only show the empty state when there is no subfolder to browse either.
         <PhotoGridEmpty />
-      )}
+      ) : null}
     </div>
   );
 }

@@ -266,6 +266,15 @@
       "loadPhotos": "加载照片",
       "includePathTip": "您仅列出路径 <mono>{path}</mono> 下的照片，因为您已设置了包含路径过滤器。这可能是为什么未找到照片。如果这不正确，请在<link>S3 设置</link>中更新。"
     },
+    "folder": {
+      "browseByFolder": "按文件夹浏览",
+      "allPhotos": "全部照片",
+      "folders": "文件夹",
+      "photoCount": "{count} 张照片",
+      "goToFolder": "前往 {name}",
+      "includeSubfolders": "包含子文件夹",
+      "includeSubfoldersHint": "同时列出当前文件夹下所有子文件夹中的照片。"
+    },
     "filter": {
       "filterOptions": "过滤选项",
       "filterByProperty": "根据属性筛选图片。",

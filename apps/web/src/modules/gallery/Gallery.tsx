@@ -3,6 +3,7 @@
 import { useFetchPhotoList } from "./hooks/use-photo-list";
 import { PhotoGrid } from "./GalleryContent/PhotoGrid";
 import { GalleryControl } from "./GalleryControl/GalleryControl";
+import { FolderBrowse } from "./FolderBrowse";
 import { ClientOnly } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
@@ -41,6 +42,7 @@ export function Gallery() {
     <div className="flex flex-col gap-6 w-full">
       <GalleryControl />
       <ClientOnly>
+        <FolderBrowse />
         <PhotoGrid />
       </ClientOnly>
     </div>

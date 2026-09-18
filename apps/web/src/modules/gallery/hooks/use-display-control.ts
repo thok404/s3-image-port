@@ -11,6 +11,7 @@ import {
 export const galleryFilterSearchParamsSchema = z.object({
   searchTerm: z.string().optional().catch(undefined),
   prefix: z.string().optional().catch(undefined),
+  includeSubfolders: z.enum(["true", "false"]).optional().catch(undefined),
   dateRangeType: z.string().optional().catch(undefined),
   sortBy: z.string().optional().catch(undefined),
   sortOrder: z.string().optional().catch(undefined),
@@ -20,12 +21,22 @@ export function galleryFilterOptionsToSearchParams(
   options: GalleryFilterOptions,
 ): z.infer<typeof galleryFilterSearchParamsSchema> {
   const params: z.infer<typeof galleryFilterSearchParamsSchema> = {};
-  const { searchTerm, prefix, dateRangeType, sortBy, sortOrder } = options;
+  const {
+    searchTerm,
+    prefix,
+    includeSubfolders,
+    dateRangeType,
+    sortBy,
+    sortOrder,
+  } = options;
   if (searchTerm !== galleryFilterDefault.searchTerm) {
     params.searchTerm = searchTerm;
   }
   if (prefix !== galleryFilterDefault.prefix) {
     params.prefix = prefix;
+  }
+  if (includeSubfolders !== galleryFilterDefault.includeSubfolders) {
+    params.includeSubfolders = includeSubfolders ? "true" : "false";
   }
   if (!deepEqual(dateRangeType, galleryFilterDefault.dateRangeType)) {
     if (typeof dateRangeType === "string") {
@@ -52,6 +63,7 @@ export function galleryFilterOptionsFromSearchParams(
   const {
     searchTerm,
     prefix,
+    includeSubfolders: includeSubfoldersRaw,
     dateRangeType: dateRangeTypeRaw,
     sortBy,
     sortOrder,
@@ -84,6 +96,10 @@ export function galleryFilterOptionsFromSearchParams(
   return galleryFilterSchema.parse({
     searchTerm,
     prefix,
+    includeSubfolders:
+      includeSubfoldersRaw === undefined
+        ? undefined
+        : includeSubfoldersRaw === "true",
     dateRangeType,
     sortBy,
     sortOrder,

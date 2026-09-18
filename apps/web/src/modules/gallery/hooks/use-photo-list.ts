@@ -9,6 +9,14 @@ import { useTranslations } from "use-intl";
 import { validS3SettingsAtom } from "@/stores/atoms/settings";
 import { getTimeRange } from "./use-display-control";
 import {
+  deriveBreadcrumbSegments,
+  deriveChildFolders,
+  isPhotoInFolderScope,
+  normalizePrefix as normalizePrefixForBrowse,
+  type BreadcrumbSegment,
+  type ChildFolder,
+} from "./folder-logic";
+import {
   currentPageAtom,
   photosAtom,
   displayOptionsAtom,
@@ -16,6 +24,8 @@ import {
 } from "@/stores/atoms/gallery";
 
 export const photosAtomReadOnly = atom((get) => get(photosAtom));
+
+export { normalizePrefix } from "./folder-logic";
 
 export const availablePrefixesAtom = atom<
   { name: string; hierarchy: number }[]
@@ -37,6 +47,31 @@ export const availablePrefixesAtom = atom<
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 
+export type { ChildFolder, BreadcrumbSegment } from "./folder-logic";
+
+/** The prefix the user is currently browsing, `undefined` means "all photos". */
+export const currentPrefixAtom = atom((get) => get(displayOptionsAtom).prefix);
+
+/**
+ * The folder used to compute the folder list. Falls back to the bucket root
+ * when no prefix filter is applied, so the root folders are always reachable.
+ */
+export const browsePrefixAtom = atom((get) =>
+  normalizePrefixForBrowse(get(currentPrefixAtom) ?? ""),
+);
+
+/**
+ * Direct subfolders of the folder currently being browsed, derived from the
+ * loaded photo list.
+ */
+export const childFoldersAtom = atom<ChildFolder[]>((get) =>
+  deriveChildFolders(get(photosAtomReadOnly), get(browsePrefixAtom)),
+);
+
+export const breadcrumbSegmentsAtom = atom<BreadcrumbSegment[]>((get) =>
+  deriveBreadcrumbSegments(get(currentPrefixAtom)),
+);
+
 export const filteredPhotosAtom = atom<Photo[]>((get) => {
   const photos = get(photosAtomReadOnly);
   const displayOptions = get(displayOptionsAtom);
@@ -53,12 +88,12 @@ export const filteredPhotosAtom = atom<Photo[]>((get) => {
   const displayedPhotos = searchedPhotos
     .filter((photo) => {
       if (
-        displayOptions.prefix !== undefined &&
-        !photo.Key.startsWith(displayOptions.prefix)
+        !isPhotoInFolderScope(
+          photo,
+          displayOptions.prefix,
+          displayOptions.includeSubfolders,
+        )
       ) {
-        return false;
-      }
-      if (displayOptions.prefix === "" && photo.Key.includes("/")) {
         return false;
       }
       const [from, to] = getTimeRange(displayOptions.dateRangeType);

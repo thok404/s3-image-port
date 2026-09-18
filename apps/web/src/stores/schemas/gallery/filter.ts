@@ -4,6 +4,7 @@ import { z } from "zod";
 const OptDefault = {
   searchTerm: "",
   prefix: undefined,
+  includeSubfolders: false,
   dateRangeType: [null, null],
   sortBy: "key",
   sortOrder: "desc",
@@ -43,6 +44,12 @@ export function timeRangesGetter(): { duration: Duration; type: string }[] {
 export const galleryFilterSchema = z.object({
   searchTerm: z.string().default(""),
   prefix: z.string().optional(),
+  /**
+   * Only meaningful when `prefix` is set. When false, only the photos directly
+   * inside the current folder are listed (folder browsing). When true, all
+   * descendants of the current folder are listed.
+   */
+  includeSubfolders: z.boolean().default(false).catch(false),
   dateRangeType: z
     .enum([...timeRangesGetter().map((t) => t.type)])
     .or(z.tuple([z.coerce.date().nullable(), z.coerce.date().nullable()]))

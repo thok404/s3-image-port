@@ -266,6 +266,15 @@
       "loadPhotos": "Load Photos",
       "includePathTip": "You are only listing photos from path <mono>{path}</mono> since you have set an include path filter. This might be why no photos are found. If this is incorrect, please update it in the <link>S3 settings</link>."
     },
+    "folder": {
+      "browseByFolder": "Browse by folder",
+      "allPhotos": "All photos",
+      "folders": "Folders",
+      "photoCount": "{count} photos",
+      "goToFolder": "Go to {name}",
+      "includeSubfolders": "Include subfolders",
+      "includeSubfoldersHint": "Also list the photos inside all subfolders of the current folder."
+    },
     "filter": {
       "filterOptions": "Filter Options",
       "filterByProperty": "Filter photos by property.",
