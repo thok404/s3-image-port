@@ -66,7 +66,13 @@ describe("image compress options", () => {
     await user.click(row().getByRole("switch"));
 
     await user.click(panel().getAllByRole("combobox")[0]);
-    await user.click(screen.getByRole("option", { name: "WebP" }));
+    // The list only mounts once the popover is open, which is not synchronous.
+    const [webp] = await screen.findAllByRole(
+      "option",
+      { name: "WebP" },
+      { timeout: 5000 },
+    );
+    await user.click(webp);
 
     expect(panel().getByRole("combobox")).toHaveTextContent(/WEBP/i);
     expect(row().getByRole("combobox")).toHaveTextContent(/JPEG/i);

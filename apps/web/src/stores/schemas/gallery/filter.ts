@@ -6,7 +6,15 @@ const OptDefault = {
   prefix: undefined,
   includeSubfolders: false,
   dateRangeType: [null, null],
-  sortBy: "key",
+  /**
+   * Sorting by date is the default: the gallery is a photo timeline, and the
+   * newest upload is what people look for.
+   *
+   * Sorting by name is the exception, and it is the only one that has to be
+   * written down. The search params drop every value that equals the default,
+   * so `?sortBy=key` is the flag that marks "this link sorts by name".
+   */
+  sortBy: "date",
   sortOrder: "desc",
 } as const satisfies GalleryFilterOptions;
 
@@ -54,7 +62,7 @@ export const galleryFilterSchema = z.object({
     .enum([...timeRangesGetter().map((t) => t.type)])
     .or(z.tuple([z.coerce.date().nullable(), z.coerce.date().nullable()]))
     .default([null, null]),
-  sortBy: z.enum(["key", "date"]).default("key").catch("key"),
+  sortBy: z.enum(["key", "date"]).default("date").catch("date"),
   sortOrder: z.enum(["asc", "desc"]).default("desc").catch("desc"),
 });
 

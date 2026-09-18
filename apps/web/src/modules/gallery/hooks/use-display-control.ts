@@ -48,6 +48,8 @@ export function galleryFilterOptionsToSearchParams(
       params.dateRangeType = JSON.stringify(stored);
     }
   }
+  // `date` is the default, so only the name sort survives in the URL:
+  // `?sortBy=key` is what makes a link sort by name.
   if (sortBy !== galleryFilterDefault.sortBy) {
     params.sortBy = sortBy;
   }
