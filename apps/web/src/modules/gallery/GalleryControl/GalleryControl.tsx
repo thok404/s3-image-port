@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useAtom, useAtomValue } from "jotai";
-import { useFetchPhotoList } from "../hooks/use-photo-list";
+import { showingPhotosAtom, useFetchPhotoList } from "../hooks/use-photo-list";
 import { validS3SettingsAtom } from "@/stores/atoms/settings";
 import McCheckbox from "~icons/mingcute/checkbox-line.jsx";
 import McDelete from "~icons/mingcute/delete-3-line.jsx";
@@ -12,12 +12,26 @@ import { DeleteSecondConfirm } from "@/components/misc/delete-second-confirm";
 import { cn } from "@/lib/utils";
 import { useDeletePhotos } from "../hooks/use-delete";
 import { selectedPhotosAtom } from "@/stores/atoms/gallery";
+import { useTranslations } from "use-intl";
 
 export function GalleryControl() {
   const [selectedPhotos, setSelectedPhotos] = useAtom(selectedPhotosAtom);
+  const showingPhotos = useAtomValue(showingPhotosAtom);
   const s3Settings = useAtomValue(validS3SettingsAtom);
   const handleDelete = useDeletePhotos();
   const { fetchPhotoList, isLoading } = useFetchPhotoList();
+  const t = useTranslations("gallery.control");
+
+  /** Selects every photo of the current page, like the Ctrl+A shortcut does. */
+  const selectCurrentPage = () => {
+    setSelectedPhotos((prev) => {
+      const newSet = new Set(prev);
+      for (const photo of showingPhotos) {
+        newSet.add(photo.Key);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="flex gap-2 justify-between">
@@ -29,6 +43,15 @@ export function GalleryControl() {
           size={"icon"}
         >
           <McRefresh className={cn(isLoading && "animate-spin")} />
+        </Button>
+        <Button
+          onClick={selectCurrentPage}
+          disabled={showingPhotos.length === 0}
+          size={"icon"}
+          title={t("selectCurrentPage")}
+          aria-label={t("selectCurrentPage")}
+        >
+          <McCheckbox />
         </Button>
         {selectedPhotos.size > 0 && (
           <>
